@@ -1,35 +1,40 @@
 package br.com.estudo.alura.kafka.ecommercie.order;
 
 import br.com.estudo.alura.kafka.ecommercie.config.Config;
+import br.com.estudo.alura.kafka.ecommercie.order.model.Order;
 import org.apache.kafka.clients.producer.Callback;
+import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutionException;
 
-public class ProducerService {
+class ProducerService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProducerService.class);
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
-        var key = "123";
-        var content = "id:1123, product:15, price:200";
+        var orderProducer = new KafkaProducer<String, Order>(Config.getProducerProperties());
+        var emailProducer = new KafkaProducer<String, String>(Config.getProducerProperties());
 
-        var producer = Config.getProducer();
-        Callback callback = getCallback();
+        Callback callback = getCallbackConfirmation();
 
-        var recordOrder = new ProducerRecord<>(Config.TOPIC_NEW_ORDER, key, content);
-        var recordEmail = new ProducerRecord<>(Config.TOPIC_NEW_ORDER_EMAIL, key, "content@email.com");
+        for (int count = 0; count < 20; count++) {
+            var order = Order.getRandom();
 
-        producer.send(recordOrder, callback).get();
-        producer.send(recordEmail, callback).get();
+            var recordOrder = new ProducerRecord<>(Config.TOPIC_NEW_ORDER, order.orderId(), order);
+            var recordEmail = new ProducerRecord<>(Config.TOPIC_NEW_ORDER_EMAIL, order.orderId(), "example@email.com");
+
+            orderProducer.send(recordOrder, callback).get();
+            emailProducer.send(recordEmail, callback).get();
+        }
     }
 
-    private static Callback getCallback() {
+    private static Callback getCallbackConfirmation() {
         Callback callback = (data, err) -> {
             if (err != null) {
-                LOGGER.error("", err);
+                LOGGER.error("Error on producer!", err);
                 return;
             }
 

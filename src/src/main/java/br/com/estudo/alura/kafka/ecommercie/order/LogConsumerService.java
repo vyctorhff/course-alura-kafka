@@ -1,7 +1,6 @@
 package br.com.estudo.alura.kafka.ecommercie.order;
 
 import br.com.estudo.alura.kafka.ecommercie.config.Config;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -16,7 +15,7 @@ public class LogConsumerService {
             var records = consume.poll(Duration.ofMillis(200));
 
             for (var record : records) {
-                System.out.println("loggind: " + record.value());
+                System.out.println("logging: " + record.value());
             }
         }
     }

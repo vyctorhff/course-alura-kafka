@@ -16,7 +16,13 @@ public class FraudConsumerService {
             ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(2000));
 
             for (var record: records) {
-                System.out.println("Processing order: " + record.value());
+                System.out.println("Processing order: key" + record.key() + " value: " + record.value());
+
+                try {
+                    Thread.sleep(2000l);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
